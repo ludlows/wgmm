@@ -370,7 +370,9 @@ class GWGMixture:
     """Generalized Wrapped Gaussian Mixture Model
 
     This class allows to estimate the parameters of a Generalized Wrapped Gaussian mixture distribution for angular-value clustering.
+    
     Reference:
+    
         @phdthesis{wang2020speech,
         title={Speech Enhancement using Fiber Acoustic Sensor},
         author={Wang, Miao},
