@@ -2,9 +2,7 @@
 # author: https://github.com/ludlows
 # 2021-Oct
 
-
 import numpy as np
-from numpy.core.fromnumeric import prod
 
 def _unwrap(values, periods):
     """unwrap values using corresponding periods
@@ -192,8 +190,35 @@ def _gwgmixture_prob_X(X, means, covars, periods, weights):
     """
     return np.sum(_gwgmixture_joint_prob_X_and_component(X, means, covars, periods, weights), axis=1)
 
-def _gwgmixture_loss():
-    pass
+def _gwgmixture_loss(X, means, covars, periods, weights):
+    """get the loss of generalized wrapped gaussian distribution
+    
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        The samples.
+    means : array-like of shape (n_components, n_features)
+        The mean vectors
+    covars : array-like of shape (n_components, n_features, n_features)
+        The covariance matrices.
+    periods : array-like of shape (n_features,)
+        The periods.
+    weights : array-like of shape (n_components, )
+        The weights of each component.
+    
+    Returns
+    -------
+    loss : scalar
+        The log probability loss
+    """
+    prob_x_z = _gwgmixture_joint_prob_X_and_component(X, means, covars, periods, weights)
+    prob_x = np.sum(prob_x_z, axis=1)
+    prob_x_inv = 1.0 / prob_x
+    n_samples = X.shape[0]
+    loss = np.multiply(prob_x_z, np.log(prob_x_z)) * prob_x_inv[:,np.newaxis]
+    loss = np.sum(loss) / n_samples
+    return loss
+
 
 
 def _gwgmixture_estimate_means_helper(X, mu, sigma, periods):
@@ -372,7 +397,7 @@ class GWGMixture:
     This class allows to estimate the parameters of a Generalized Wrapped Gaussian mixture distribution for angular-value clustering.
     
     Reference:
-    
+
         @phdthesis{wang2020speech,
         title={Speech Enhancement using Fiber Acoustic Sensor},
         author={Wang, Miao},
