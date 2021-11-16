@@ -174,10 +174,56 @@ def _gwgmixture_estimate_means(X, means, covars, periods, prob_X):
 
 
 
-def _gwgmixture_estimate_covars(samples, mu, sigma2, period, prob_X):
+def _gwgmixture_estimate_covars(X, means, covars, periods, prob_X):
     """ estimate covariance matrix for each component
+    
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        The samples.
+    weights : array-like of shape (n_components, )
+        The weights of each component.
+    means : array-like of shape (n_components, n_features)
+        The mean vectors
+    covars : array-like of shape (n_components, n_features, n_features)
+        The covariance matrices.
+    periods : array-like of shape (n_features,)
+        The period vector.
+    prob_X : array-like of shape  (n_samples,)
+        The probability of each sample.
+    
+    Returns
+    -------
+    new_covars :  array-like of shape (n_components, n_features, n_features)
+        The new covariance matrices
     """
-    pass
+    new_covars = np.zeros_like(covars)
+    n_components = means.shape[0]
+    n_samples, n_features = X.shape
+    prob_X_inv = 1.0 / prob_X
+    exp_term = np.zeros(n_samples)
+    exp_diff_term = np.zeros((n_features, n_features, n_samples))
+    for k in range(n_components):
+        mu = means[k,:]
+        sigma = covars[k,:,:]
+        sigma_inv = np.linalg.pinv(sigma)
+        
+        for i in range(n_samples):
+            x = X[i,:]
+            cache = [0,0,0]
+            exp_diff_term[:,:,i] = 0
+            for w_index, w in enumerate([-1,0,1]):
+                diff = x - w * periods - mu
+                cache[w_index] = np.exp(-0.5 * np.dot(np.dot(diff, sigma_inv), diff))
+                t = diff[:,np.newaxis]
+                exp_diff_term[:,:,i] += cache[w_index] * np.matmul(t, t.T)
+            exp_term[i] = np.sum(cache)
+
+        upper = np.dot(prob_X_inv, exp_diff_term)
+        lower = np.dot(prob_X_inv, exp_term)
+        new_covars[k, :, :] = upper / lower
+    return new_covars
+    
 
 
 
@@ -268,10 +314,17 @@ class GWGMixture:
             True when convergence was reached in fit(), False otherwise.
         """
         self.converged_ = False
-        loss = _gwgmixture_loss(X, self.means_, self.covars_, self.periods_, self.weights_, )
-        
+        n_samples = X.shape[0]
         for num in range(self._max_iter):
-            pass
+            prob_X, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods)
+            loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
+            self.weights_ = np.sum(prob_component_given_X, axis=1) / n_samples
+            self.means_ = _gwgmixture_estimate_means(X, self.means_, self.covars_, self.periods_, prob_X)
+            self.covars_ = _gwgmixture_estimate_covars(X, self.means_, self.periods_, prob_X)
+            new_loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
+            if abs(loss - new_loss) < 0.001:
+                self.converged_ = True
+                break
         return self.converged_
         
 
@@ -290,5 +343,10 @@ class GWGMixture:
            The predicted cluster index 
         """
         pass
+    
+    def prob(self, X):
+        """using Generalized Wrapped Gaussian Mixture model get the probability 
 
+        """
+        pass
     
