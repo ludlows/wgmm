@@ -1,4 +1,4 @@
-# GWGMM (Generalized Wrapped Gaussian Mixture Model)
+# GWGMM (Generalized Wrapped Gaussian Mixture Model) for angular value clustering
 
 An implementation of the proposed `GWGMM` in Thesis [`Speech Enhancement using Fiber Acoustic Sensor`](https://spectrum.library.concordia.ca/986722/) at Concordia University.
 
