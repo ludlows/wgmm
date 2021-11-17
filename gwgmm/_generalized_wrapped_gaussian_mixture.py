@@ -167,7 +167,8 @@ def _gwgmixture_estimate_means(X, means, covars, periods, prob_X):
                 cache[w_index] = np.exp(-0.5 * np.dot(np.dot(diff, sigma_inv), diff))
                 exp_diff_term[:, i] += cache[w_index] * (x - w * periods)
             exp_term[i] = np.sum(cache)
-        upper = np.dot(prob_X_inv, exp_diff_term)
+
+        upper = np.dot(exp_diff_term, prob_X_inv)
         lower = np.dot(prob_X_inv, exp_term)
         new_means[k, :] = upper / lower
     return new_means
@@ -219,7 +220,7 @@ def _gwgmixture_estimate_covars(X, means, covars, periods, prob_X):
                 exp_diff_term[:,:,i] += cache[w_index] * np.matmul(t, t.T)
             exp_term[i] = np.sum(cache)
 
-        upper = np.dot(prob_X_inv, exp_diff_term)
+        upper = np.dot(exp_diff_term, prob_X_inv)
         lower = np.dot(prob_X_inv, exp_term)
         new_covars[k, :, :] = upper / lower
     return new_covars
@@ -316,11 +317,11 @@ class GWGMixture:
         self.converged_ = False
         n_samples = X.shape[0]
         for num in range(self._max_iter):
-            prob_X, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods)
+            prob_X, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods_)
             loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
             self.weights_ = np.sum(prob_component_given_X, axis=1) / n_samples
             self.means_ = _gwgmixture_estimate_means(X, self.means_, self.covars_, self.periods_, prob_X)
-            self.covars_ = _gwgmixture_estimate_covars(X, self.means_, self.periods_, prob_X)
+            self.covars_ = _gwgmixture_estimate_covars(X, self.means_, self.covars_, self.periods_, prob_X)
             new_loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
             if abs(loss - new_loss) < 0.001:
                 self.converged_ = True
