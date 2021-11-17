@@ -3,8 +3,8 @@
 # 2021-Oct
 
 import numpy as np
-np.random.seed(17)
-def _unwrap(values, periods):
+
+def _gwgmixture_unwrap(values, periods):
     """unwrap values using corresponding periods
     
     Parameters
@@ -226,9 +226,6 @@ def _gwgmixture_estimate_covars(X, means, covars, periods, prob_X):
     return new_covars
     
 
-
-
-
 class GWGMixture:
     """Generalized Wrapped Gaussian Mixture Model
 
@@ -316,19 +313,21 @@ class GWGMixture:
         """
         self.converged_ = False
         n_samples = X.shape[0]
-        for num in range(self._max_iter):
+        self.n_iter_ = 0
+        for _ in range(self._max_iter):
             prob_X, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods_)
             loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
             self.weights_ = np.sum(prob_component_given_X, axis=1) / n_samples
             self.means_ = _gwgmixture_estimate_means(X, self.means_, self.covars_, self.periods_, prob_X)
             self.covars_ = _gwgmixture_estimate_covars(X, self.means_, self.covars_, self.periods_, prob_X)
+            self.covars_ += self._reg_covar
             new_loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
             if abs(loss - new_loss) < 0.001:
                 self.converged_ = True
                 break
+            self.n_iter_ += 1
         return self.converged_
         
-
 
     def predict(self, X):
         """using Generalized Wrapped Gaussian Mixture model to predict the cluster of each sample in X
@@ -343,11 +342,23 @@ class GWGMixture:
         y : array-like of shape(n_samples, )
            The predicted cluster index 
         """
-        pass
-    
-    def prob(self, X):
-        """using Generalized Wrapped Gaussian Mixture model get the probability 
+        _, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods_)
+        return np.argmax(prob_component_given_X, axis=0)
 
+    
+    def pdf(self, X):
+        """using Generalized Wrapped Gaussian Mixture model get the probability density function (PDF)
+        
+        Parameters
+        ----------
+        X : array-like of shape(n_samples, n_features)
+            The input samples.
+        
+        Returns:
+        ----------
+        pdfs : array-like of shape(n_samples, )
+           The probability density function
         """
-        pass
+        _, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods_)
+        return np.dot(prob_component_given_X.T, self.weights_)
     
