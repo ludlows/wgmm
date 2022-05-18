@@ -1,8 +1,21 @@
-# Generalized Wrapped Gaussian Mixture Model
+# (Generalized) Wrapped Gaussian Mixture Model
 # author: https://github.com/ludlows
 # 2021-Oct
+"""
+An implementation of the (Generalized) Wrapped Gaussian Mixture Model in the thesis below.
+
+ Reference:
+        @mastersthesis{wang2020speech,
+        title={Speech Enhancement using Fiber Acoustic Sensor},
+        author={Wang, Miao},
+        year={2020},
+        school={Concordia University},
+        url={https://spectrum.library.concordia.ca/id/eprint/986722/1/Miao_MASc_S2020.pdf}
+        }
+"""
 
 import numpy as np
+
 
 def _gwgmixture_unwrap(values, periods):
     """unwrap values using corresponding periods
@@ -40,10 +53,10 @@ def _gwgmixture_prob_x_given_component(x, mu_k, sigma_k, periods):
         Prob(x | z=k) = WN(x; mu_k, sigma_k, periods)
     """
     dim = x.shape[0]
-    const = 1.0 / np.sqrt((2*np.pi)**dim*(np.linalg.det(sigma_k)))
+    const = 1.0 / np.sqrt((2 * np.pi) ** dim * (np.linalg.det(sigma_k)))
     sigma_k_inv = np.linalg.pinv(sigma_k)
     s = 0
-    for w in [-1,0,1]:
+    for w in [-1, 0, 1]:
         diff = x - w * periods - mu_k
         s += np.exp(-0.5 * np.dot(np.dot(diff, sigma_k_inv), diff))
     return const * s
@@ -77,16 +90,15 @@ def _gwgmixture_prob_x_and_prob_component_given_x(X, weights, means, covars, per
     prob_component_given_X = np.zeros((n_components, n_samples))
     for k in range(n_components):
         alpha = weights[k]
-        mu = means[k,:]
-        sigma = covars[k,:,:]
+        mu = means[k, :]
+        sigma = covars[k, :, :]
         for i in range(n_samples):
-            x = X[i,:]
-            prob_component_given_X[k,i] = alpha * _gwgmixture_prob_x_given_component(x, mu, sigma, periods)
-    
+            x = X[i, :]
+            prob_component_given_X[k, i] = alpha * _gwgmixture_prob_x_given_component(x, mu, sigma, periods)
+
     prob_X = np.sum(prob_component_given_X, axis=0)
     prob_component_given_X = prob_component_given_X / prob_X
     return prob_X, prob_component_given_X
-
 
 
 def _gwgmixture_loss(X, weights, means, covars, periods, prob_component_given_X):
@@ -116,12 +128,13 @@ def _gwgmixture_loss(X, weights, means, covars, periods, prob_component_given_X)
     n_samples = X.shape[0]
     loss = 0.0
     for k in range(n_components):
-        mu = means[k,:]
+        mu = means[k, :]
         alpha = weights[k]
-        sigma = covars[k,:,:]
+        sigma = covars[k, :, :]
         for i in range(n_samples):
-            x = X[i,:]
-            loss += prob_component_given_X[k, i] * (np.log(alpha) + np.log(_gwgmixture_prob_x_given_component(x, mu,sigma, periods)))
+            x = X[i, :]
+            loss += prob_component_given_X[k, i] * (
+                        np.log(alpha) + np.log(_gwgmixture_prob_x_given_component(x, mu, sigma, periods)))
     return loss
 
 
@@ -132,8 +145,6 @@ def _gwgmixture_estimate_means(X, means, covars, periods, prob_X):
     ----------
     X : array-like of shape (n_samples, n_features)
         The samples.
-    weights : array-like of shape (n_components, )
-        The weights of each component.
     means : array-like of shape (n_components, n_features)
         The mean vectors
     covars : array-like of shape (n_components, n_features, n_features)
@@ -159,10 +170,10 @@ def _gwgmixture_estimate_means(X, means, covars, periods, prob_X):
         sigma = covars[k, :, :]
         sigma_inv = np.linalg.pinv(sigma)
         for i in range(n_samples):
-            x = X[i,:]
-            cache = [0,0,0]
+            x = X[i, :]
+            cache = [0, 0, 0]
             exp_diff_term[:, i] = 0
-            for w_index, w in enumerate([-1,0,1]):
+            for w_index, w in enumerate([-1, 0, 1]):
                 diff = x - w * periods - mu
                 cache[w_index] = np.exp(-0.5 * np.dot(np.dot(diff, sigma_inv), diff))
                 exp_diff_term[:, i] += cache[w_index] * (x - w * periods)
@@ -174,7 +185,6 @@ def _gwgmixture_estimate_means(X, means, covars, periods, prob_X):
     return new_means
 
 
-
 def _gwgmixture_estimate_covars(X, means, covars, periods, prob_X):
     """ estimate covariance matrix for each component
     
@@ -182,8 +192,6 @@ def _gwgmixture_estimate_covars(X, means, covars, periods, prob_X):
     ----------
     X : array-like of shape (n_samples, n_features)
         The samples.
-    weights : array-like of shape (n_components, )
-        The weights of each component.
     means : array-like of shape (n_components, n_features)
         The mean vectors
     covars : array-like of shape (n_components, n_features, n_features)
@@ -205,35 +213,36 @@ def _gwgmixture_estimate_covars(X, means, covars, periods, prob_X):
     exp_term = np.zeros(n_samples)
     exp_diff_term = np.zeros((n_features, n_features, n_samples))
     for k in range(n_components):
-        mu = means[k,:]
-        sigma = covars[k,:,:]
+        mu = means[k, :]
+        sigma = covars[k, :, :]
         sigma_inv = np.linalg.pinv(sigma)
-        
+
         for i in range(n_samples):
-            x = X[i,:]
-            cache = [0,0,0]
-            exp_diff_term[:,:,i] = 0
-            for w_index, w in enumerate([-1,0,1]):
+            x = X[i, :]
+            cache = [0, 0, 0]
+            exp_diff_term[:, :, i] = 0
+            for w_index, w in enumerate([-1, 0, 1]):
                 diff = x - w * periods - mu
                 cache[w_index] = np.exp(-0.5 * np.dot(np.dot(diff, sigma_inv), diff))
-                t = diff[:,np.newaxis]
-                exp_diff_term[:,:,i] += cache[w_index] * np.matmul(t, t.T)
+                t = diff[:, np.newaxis]
+                exp_diff_term[:, :, i] += cache[w_index] * np.matmul(t, t.T)
             exp_term[i] = np.sum(cache)
 
         upper = np.dot(exp_diff_term, prob_X_inv)
         lower = np.dot(prob_X_inv, exp_term)
         new_covars[k, :, :] = upper / lower
     return new_covars
-    
 
-class GWGMixture:
-    """Generalized Wrapped Gaussian Mixture Model
 
-    This class allows to estimate the parameters of a Generalized Wrapped Gaussian mixture distribution for angular-value clustering.
+class WGMixModel:
+    """(Generalized) Wrapped Gaussian Mixture Model
+
+    This class allows to estimate the parameters of a (Generalized) Wrapped Gaussian mixture distribution for
+    angular clustering.
     
     Reference:
 
-        @phdthesis{wang2020speech,
+        @mastersthesis{wang2020speech,
         title={Speech Enhancement using Fiber Acoustic Sensor},
         author={Wang, Miao},
         year={2020},
@@ -284,7 +293,9 @@ class GWGMixture:
         Number of step used by the best fit of EM to reach the convergence.
 
     """
-    def __init__(self, n_components, weights_init, means_init, covars_init, periods, tol=1e-3, reg_covar=1e-6,  max_iter=100):
+
+    def __init__(self, n_components, weights_init, means_init, covars_init, periods, tol=1e-3, reg_covar=1e-6,
+                 max_iter=100):
         if n_components <= 0:
             raise ValueError("n_components cannot be zero or negative.")
         self.n_components = n_components
@@ -315,19 +326,21 @@ class GWGMixture:
         n_samples = X.shape[0]
         self.n_iter_ = 0
         for _ in range(self._max_iter):
-            prob_X, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods_)
+            prob_X, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_,
+                                                                                           self.means_, self.covars_,
+                                                                                           self.periods_)
             loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
             self.weights_ = np.sum(prob_component_given_X, axis=1) / n_samples
             self.means_ = _gwgmixture_estimate_means(X, self.means_, self.covars_, self.periods_, prob_X)
             self.covars_ = _gwgmixture_estimate_covars(X, self.means_, self.covars_, self.periods_, prob_X)
             self.covars_ += self._reg_covar
-            new_loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_, prob_component_given_X)
+            new_loss = _gwgmixture_loss(X, self.weights_, self.means_, self.covars_, self.periods_,
+                                        prob_component_given_X)
             if abs(loss - new_loss) < 0.001:
                 self.converged_ = True
                 break
             self.n_iter_ += 1
         return self.converged_
-        
 
     def predict(self, X):
         """using Generalized Wrapped Gaussian Mixture model to predict the cluster of each sample in X
@@ -337,15 +350,15 @@ class GWGMixture:
         X : array-like of shape(n_samples, n_features)
             The input samples.
         
-        Returns:
+        Returns
         ----------
         y : array-like of shape(n_samples, )
            The predicted cluster index 
         """
-        _, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods_)
+        _, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_,
+                                                                                  self.covars_, self.periods_)
         return np.argmax(prob_component_given_X, axis=0)
 
-    
     def pdf(self, X):
         """using Generalized Wrapped Gaussian Mixture model get the probability density function (PDF)
         
@@ -354,11 +367,11 @@ class GWGMixture:
         X : array-like of shape(n_samples, n_features)
             The input samples.
         
-        Returns:
+        Returns
         ----------
         pdfs : array-like of shape(n_samples, )
            The probability density function
         """
-        _, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_, self.covars_, self.periods_)
+        _, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_,
+                                                                                  self.covars_, self.periods_)
         return np.dot(prob_component_given_X.T, self.weights_)
-    
