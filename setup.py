@@ -15,7 +15,7 @@ An implementation of the (Generalized) Wrapped Gaussian Mixture Model in the the
         }
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -27,6 +27,8 @@ setup(
     description="Wrapped Gaussian Mixture Model (WGMM) for angular clustering",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    packages=find_packages(),
+    package_data={'wgmm': ["*.py"]},
     url="https://github.com/ludlows/wgmm",
     setup_requires=['setuptools', 'numpy'],
     classifiers=[
