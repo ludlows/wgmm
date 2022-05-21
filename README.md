@@ -35,7 +35,7 @@ python setup.py install
 
 | distribution of synthesized angular (circular) values | probability density function (PDF) obtained by WGMM |
 |:-----------------------------------------------------:|:---------------------------------------------------:|
-|               ![](img/angular-hist.png)               |              ![](img/angular-wgmm.png)              |
+|       ![angular-hist.png](img/angular-hist.png)       |      ![angular-wgmm.png](img/angular-wgmm.png)      |
 
 Python code to `fit` these synthesized values is shown below:
 ```python
