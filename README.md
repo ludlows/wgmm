@@ -33,7 +33,39 @@ python setup.py install
 # Example-1: clustering in a polar coordinate
 
 
+| distribution of synthesized angular (circular) values | probability density function (PDF) obtained by WGMM |
+|:-----------------------------------------------------:|:---------------------------------------------------:|
+|               ![](img/angular-hist.png)               |              ![](img/angular-wgmm.png)              |
 
+Python code to `fit` these synthesized values is shown below:
+```python
+# import modules
+import numpy as np
+from wgmm import WGMixModel
+
+# set initial values
+weights_init = np.array([0.5,0.5])
+means_init = np.array([[270.0],[180.0]]) / 180.0 * np.pi
+covars_init = np.zeros((2,1,1))
+covars_init[0,0,0] = 0.8
+covars_init[1,0,0] = 0.8
+periods = np.array([2*np.pi])
+
+# build model
+model = WGMixModel(n_components=2, weights_init=weights_init, 
+                   means_init=means_init, covars_init=covars_init, 
+                   periods=periods, 
+                   tol=1e-4, reg_covar=1e-6, max_iter=1000)
+
+# fit samples
+model.fit(samples)
+
+# print parameters estimated by WGMM
+print(model.means_ / np.pi * 180) # 
+print(model.weights_)
+print(model.covars_)
+```
+details about this example could be found in this [notebook](example/example-01-angular-clustering-in-polar-coordinate.ipynb).
 
 # Example-2: clustering in a sphere coordinate
 

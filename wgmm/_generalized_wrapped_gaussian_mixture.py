@@ -134,7 +134,7 @@ def _gwgmixture_loss(X, weights, means, covars, periods, prob_component_given_X)
         for i in range(n_samples):
             x = X[i, :]
             loss += prob_component_given_X[k, i] * (
-                        np.log(alpha) + np.log(_gwgmixture_prob_x_given_component(x, mu, sigma, periods)))
+                    np.log(alpha) + np.log(_gwgmixture_prob_x_given_component(x, mu, sigma, periods)))
     return loss
 
 
@@ -374,6 +374,6 @@ class WGMixModel:
         pdfs : array-like of shape(n_samples, )
            The probability density function
         """
-        _, prob_component_given_X = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_,
-                                                                                  self.covars_, self.periods_)
-        return np.dot(prob_component_given_X.T, self.weights_)
+        pdfs, _ = _gwgmixture_prob_x_and_prob_component_given_x(X, self.weights_, self.means_,
+                                                                self.covars_, self.periods_)
+        return pdfs
