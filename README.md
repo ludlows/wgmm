@@ -5,7 +5,7 @@
       \ V  V /| |_| | |  | | |  | | 
        \_/\_/  \____|_|  |_|_|  |_| 
 
-# WGMM (Wrapped Gaussian Mixture Model) for angular clustering
+# WGMM (Wrapped Gaussian Mixture Model) for angular (circular) clustering
 
 An implementation of the `WGMM` in Thesis [`Speech Enhancement using Fiber Acoustic Sensor`](https://spectrum.library.concordia.ca/id/eprint/986722/1/Miao_MASc_S2020.pdf) at Concordia University.
 
@@ -22,7 +22,7 @@ The `WGMM` here is designed to solve the phase ambiguity between `0` and `T`, wh
 
 install this code using pip:
 ```bash
-pip install https://github.com/ludlows/wgmm
+pip install https://github.com/ludlows/wgmm/archive/refs/heads/main.zip
 ```
 
 install this code using `setup.py` 
@@ -30,7 +30,7 @@ install this code using `setup.py`
 python setup.py install
 ```
 
-# Example-1: clustering in a polar coordinate
+# Example-1: angular clustering in a polar coordinate
 
 
 | distribution of synthesized angular (circular) values | probability density function (PDF) obtained by WGMM |
@@ -61,13 +61,16 @@ model = WGMixModel(n_components=2, weights_init=weights_init,
 model.fit(samples)
 
 # print parameters estimated by WGMM
-print(model.means_ / np.pi * 180) # 
+print(model.means_ / np.pi * 180) # 355.13560655, 99.36977191
 print(model.weights_)
 print(model.covars_)
 ```
 details about this example could be found in this [notebook](example/example-01-angular-clustering-in-polar-coordinate.ipynb).
 
-# Example-2: clustering in a sphere coordinate
+# Example-2: clustering samples in a polar coordinate
+
+
+# Example-3: clustering in a sphere coordinate
 
 
 
