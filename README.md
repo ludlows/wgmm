@@ -112,12 +112,6 @@ labels = model.predict(samples_wgmm)
 
 details about this example could be found in this [notebook](example/example-02-clustering-samples-in-a-polar-coordinate.ipynb).
 
-
-# Example-3: clustering in a sphere coordinate
-
-
-
-
 # Cite this code
 
 Please cite this code if you are using it in a project.
