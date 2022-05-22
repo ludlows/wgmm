@@ -69,6 +69,15 @@ details about this example could be found in this [notebook](example/example-01-
 
 # Example-2: clustering samples in a polar coordinate
 
+Here we show an example to cluster heterogeneous samples (angles are circular and radius not).
+
+|     polar plot of synthesized dataset     |         clusters obtained by WGMM         |
+|:-----------------------------------------:|:-----------------------------------------:|
+| ![theta-r-dist.png](img/theta-r-dist.png) | ![theta-r-wgmm.png](img/theta-r-wgmm.png) |
+
+
+details about this example could be found in this [notebook](example/example-02-clustering-samples-in-a-polar-coordinate.ipynb).
+
 
 # Example-3: clustering in a sphere coordinate
 
