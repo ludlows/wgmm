@@ -75,6 +75,40 @@ Here we show an example to cluster heterogeneous samples (angles are circular an
 |:-----------------------------------------:|:-----------------------------------------:|
 | ![theta-r-dist.png](img/theta-r-dist.png) | ![theta-r-wgmm.png](img/theta-r-wgmm.png) |
 
+```python
+# import modules
+import numpy as np
+from wgmm import WGMixModel
+
+# set initial values
+weights_init = np.array([0.9,0.1])
+means_init = np.array([[270.0, 0.5],[180.0, 0.7]]) #/ 180.0 * np.pi
+means_init[:,0] = means_init[:,0] / 180.0 * np.pi
+covars_init = np.zeros((2,2,2))
+covars_init[0,:,:] = np.array([[0.1,0],[0,0.1]])
+covars_init[1,:,:] = np.array([[0.1,0],[0,0.1]])
+periods = np.array([2*np.pi, 3]) # 3 is big enough here since radius is not a circular variable, and it ranges from 0 to 1
+
+#build model
+model = WGMixModel(n_components=2, 
+                   weights_init=weights_init, 
+                   means_init=means_init, 
+                   covars_init=covars_init, 
+                   periods=periods, 
+                   tol=1e-4, reg_covar=1e-6, max_iter=100)
+# fit samples
+model.fit(samples_wgmm)
+
+# print parameters estimated by WGMM
+means_estimated = model.means_.copy()
+means_estimated[:,0] = means_estimated[:,0] / np.pi * 180
+means_estimated
+# array([[355.11574106,   0.39957169],
+#        [100.05972748,   0.70743917]])
+
+# classify samples
+labels = model.predict(samples_wgmm)
+```
 
 details about this example could be found in this [notebook](example/example-02-clustering-samples-in-a-polar-coordinate.ipynb).
 
