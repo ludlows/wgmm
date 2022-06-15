@@ -7,14 +7,24 @@
 
 # WGMM (Wrapped Gaussian Mixture Model) for angular (circular) clustering
 
-An implementation of the `WGMM` in Thesis [`Speech Enhancement using Fiber Acoustic Sensor`](https://spectrum.library.concordia.ca/id/eprint/986722/1/Miao_MASc_S2020.pdf) at Concordia University.
+An implementation of the `WGMM` in thesis [`Speech Enhancement using Fiber Acoustic Sensor`](https://spectrum.library.concordia.ca/id/eprint/986722/1/Miao_MASc_S2020.pdf) at Concordia University and article [`Bayesian modelling of the temporal aspects of smart home activity with circular statistics`](https://link.springer.com/content/pdf/10.1007/978-3-319-23525-7_17.pdf).
 
     @mastersthesis{wang2020speech,
     title={Speech Enhancement using Fiber Acoustic Sensor},
     author={Wang, Miao},
     year={2020},
     school={Concordia University},
-    url={https://spectrum.library.concordia.ca/id/eprint/986722/1/Miao_MASc_S2020.pdf}}
+    url={https://spectrum.library.concordia.ca/id/eprint/986722/1/Miao_MASc_S2020.pdf}
+    }
+    
+    @inproceedings{diethe2015bayesian,
+    title={Bayesian modelling of the temporal aspects of smart home activity with circular statistics},
+    author={Diethe, Tom and Twomey, Niall and Flach, Peter},
+    booktitle={Joint European Conference on Machine Learning and Knowledge Discovery in Databases},
+    pages={279--294},
+    year={2015},
+    organization={Springer}
+    }
 
 The `WGMM` here is designed to solve the phase ambiguity between `0` and `T`, which could be any positive value like ![pi](https://latex.codecogs.com/gif.latex?%5Cpi) and ![2pi](https://latex.codecogs.com/gif.latex?2%5Cpi). 
 
